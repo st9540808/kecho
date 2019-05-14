@@ -1,0 +1,16 @@
+#!/usr/bin/stap
+
+global stats
+
+probe module("fastecho").function("get_request.constprop.1").return {
+    a = gettimeofday_us() - @entry(gettimeofday_us());
+    printf("tid=%d name=%s ", tid(), execname());
+    printf("time=%dus\n", a);
+    stats <<< a;
+}
+
+probe end {
+    printf("\n");
+    printf("get_request execution time (us)\n");
+    print(@hist_log(stats));
+}
